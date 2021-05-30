@@ -2,23 +2,44 @@ import styled from 'styled-components';
 import { auth, provider } from '../firebase';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { selectUserName, selectUserPhoto, setUserLoginDetails } from '../Features/user/userSlice';
+import { selectUserName, selectUserPhoto, setUserLoginDetails, setSignOutState } from '../Features/user/userSlice';
+import { useEffect } from 'react';
 
 const Header = (props) => {
 
     const dispatch = useDispatch();
-    const history = useHistory();
+    let history = useHistory();
     const userName = useSelector(selectUserName);
     const userPhoto = useSelector(selectUserPhoto);
 
+    useEffect(() => {
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                setUser(user);
+                history.push("/home");
+            }
+        });
+    }, [userName]);
+
     const handleAuth = () => {
-        auth.signInWithPopup(provider)
-            .then((result) => {
-                setUser(result.user);
+        if (!userName) {
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    setUser(result.user);
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        } else {
+            auth.signOut().then(() => {
+                dispatch(setSignOutState());
+                console.log("Signed Out");
+                history.push("/");
+            }).catch((error) => {
+                alert(error);
             })
-            .catch((error) => {
-                alert(error.message);
-            });
+        }
+
     }
 
     const setUser = (user) => {
@@ -65,7 +86,10 @@ const Header = (props) => {
                                 <span>SERIES</span>
                             </a>
                         </NavMenu>
-                        <UserImg src={userPhoto} alt={userName} />
+                        <SignOut>
+                            <UserImg src={userPhoto} alt={userName} />
+                            <DropDown><span onClick={handleAuth}>Sign Out</span></DropDown>
+                        </SignOut>
                     </>
                     )
             }
@@ -188,5 +212,40 @@ height: 100%;
 border-radius: 50%;
 padding: 10px;
 `;
+
+const DropDown = styled.div`
+position:absolute;
+top: 50px;
+background: rgb(19,19,19);
+border: 1px solid rgba(151,151,151,0.34);
+border-radius: 4px;
+box-shadow: rgba(0 0 0 / 50%) 0px 0px 18px 0px;
+padding: 10px;
+right: 0;
+font-size: 14px;
+letter-spacing: 2px;
+white-space: nowrap;
+cursor: pointer;
+width: 100px;
+opacity: 0;
+`;
+
+const SignOut = styled.div`
+position: relative;
+height: 58px;
+width: 58px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+
+&:hover{
+    ${DropDown}{
+        opacity: 1;
+        transition-duration: 1s;
+    }
+}
+`;
+
 
 export default Header;
