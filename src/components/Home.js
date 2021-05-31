@@ -39,14 +39,13 @@ const Home = (props) => {
                         break;
                 }
             });
+            dispatch(setMovies({
+                recommends: recommends,
+                newDisney: newDisney,
+                originals: originals,
+                trending: trending
+            }))
         });
-
-        dispatch(setMovies({
-            recommends: recommends,
-            newDisney: newDisney,
-            originals: originals,
-            trending: trending
-        }))
     }, [userName]);
 
     return (
