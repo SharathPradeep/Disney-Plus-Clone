@@ -15,7 +15,7 @@ const Recommends = (props) => {
                 {
                     recommends && recommends.map((movie) => (
                         <Wrap key={movie.id}>
-                            <Link to={'/detail' + movie.id}>
+                            <Link to={'/detail/' + movie.id}>
                                 <img src={movie.cardImg} alt={movie.title} />
                             </Link>
                         </Wrap>
